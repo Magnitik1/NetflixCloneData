@@ -52,7 +52,7 @@ let data = [
           "https://screenanarchy.com/assets/2023/03/john_wick_chapter_4-Crop860.jpg",
         autoPlaySettings: [true, false],
         language: "English",
-        myList: ["Film1", "Film2", "Film3"],
+        myList: [" ", " ", " "],
       },
       {
         name: "John's Mom",
@@ -60,7 +60,7 @@ let data = [
           "https://c.ndtvimg.com/2022-07/nrne792_liz-truss-reuters_625x300_11_July_22.jpg",
         autoPlaySettings: [true, false],
         language: "English",
-        myList: ["Film4", "Film2", "Film5"],
+        myList: ["Film4", " ", "Film5"],
       },
       {
         name: "John's Dad",
@@ -68,7 +68,7 @@ let data = [
           "https://i.pinimg.com/originals/9f/04/99/9f0499b79b6302a48c8c3ba41c3195cf.jpg",
         autoPlaySettings: [true, false],
         language: "Українська",
-        myList: ["Film1", "Film7", "Film4"],
+        myList: [" ", "Film7", "Film4"],
       },
     ],
   },
@@ -83,7 +83,7 @@ let data = [
           "https://i1.sndcdn.com/artworks-aTq4Lvypyud6O100-zb2Cug-t500x500.jpg",
         autoPlaySettings: [true, false],
         language: "English",
-        myList: ["Film1", "Film2", "Film4"],
+        myList: [" ", " ", "Film4"],
       },
     ],
   },
@@ -94,40 +94,62 @@ let data = [
     users: [
       {
         name: "Alex",
-        imgSrc:
-          "https://screenanarchy.com/assets/2023/03/john_wick_chapter_4-Crop860.jpg",
+        imgSrc: "10",
         autoPlaySettings: [true, false],
         language: "Українська",
-        myList: ["Film1", "Film2", "Film3"],
+        myList: [
+          { name: "The Walking Dead", liked: false },
+          { name: "Rick and Morty", liked: true },
+          { name: "Аdolescence", liked: false },
+          { name: "Oldboy", liked: false },
+        ],
       },
       {
         name: "Also Alex",
-        imgSrc:
-          "https://i1.sndcdn.com/artworks-aTq4Lvypyud6O100-zb2Cug-t500x500.jpg",
+        imgSrc: "6",
         autoPlaySettings: [true, false],
         language: "English",
-        myList: ["Film1", "Film2", "Film3"],
+        myList: [
+          { name: "Fight club", liked: false },
+          { name: "Almost Famous", liked: true },
+          { name: "Аdolescence", liked: false },
+          { name: "Shawshank redemption", liked: false },
+        ],
       },
       {
         name: "Cool Alex",
-        imgSrc:
-          "https://i.pinimg.com/originals/9f/04/99/9f0499b79b6302a48c8c3ba41c3195cf.jpg",
+        imgSrc: "15",
         autoPlaySettings: [true, true],
         language: "Українська",
-        myList: ["Film1", "Film2", "Film3"],
+        myList: [
+          { name: "The Good Doctor", liked: false },
+          { name: "Mad Max: Fury Road", liked: true },
+          { name: "Murderer", liked: false },
+          { name: "Leviathan", liked: false },
+        ],
       },
       {
         name: "No Alex",
-        imgSrc:
-          "https://media.istockphoto.com/id/1393750072/vector/flat-white-icon-man-for-web-design-silhouette-flat-illustration-vector-illustration-stock.jpg?s=612x612&w=0&k=20&c=s9hO4SpyvrDIfELozPpiB_WtzQV9KhoMUP9R9gVohoU=",
+        imgSrc: "13",
         autoPlaySettings: [false, false],
         language: "English",
-        myList: ["Film1", "Film2", "Film3"],
+        myList: [
+          { name: "The Walking Dead", liked: true },
+          { name: "Mad Max: Fury Road", liked: true },
+          { name: "Murderer", liked: false },
+          { name: "Rick and Morty", liked: true },
+          { name: "Leviathan", liked: false },
+          { name: "Shawshank redemption", liked: false },
+          { name: "Fight club", liked: true },
+          { name: "Mulholland Drive", liked: false },
+          { name: "Аdolescence", liked: false },
+          { name: "Oldboy", liked: true },
+        ],
       },
     ],
   },
 ];
-app.use(express.static(`main`));
+
 app.use(express.json());
 
 app.post("/process_post", function (request, response) {
@@ -138,7 +160,7 @@ app.post("/process_post", function (request, response) {
 });
 
 app.post("/process_post_profile", function (request, response) {
-  //need: {email, profile{name, imgSrc, myList[]}}
+  //need: {email, profile{name, language, autoPlaySettings, imgSrc, myList[]}}
   let temp = ((_) => (_ > -1 ? _ : Infinity))(
     data.findIndex((_) => _.email == request.body.email)
   );
@@ -165,21 +187,39 @@ app.post("/process_remove_profile", function (request, response) {
 });
 
 app.post("/process_edit_profile", function (request, response) {
-  //need: {email, oldName, newName, language, autoPlaySettings, imgSrc}
+  //need: {email, (oldName and newName) or name}
+  if (!request.body.oldName) {
+    request.body.oldName = request.body.name;
+  }
+
   let account = data.findIndex((_) => _.email == request.body.email);
-  if(account===-1){console.log(-1); return}
-  let prof = data[account].users.findIndex((_) => _.name == request.body.oldName);
+  if (account === -1) {
+    console.log("account: -1");
+    return;
+  }
+  let prof = data[account].users.findIndex(
+    (_) => _.name == request.body.oldName
+  );
+
+  if (prof === -1) {
+    console.log("prof: -1");
+    return;
+  }
   console.log(request.body);
-  console.log(data[account].users);
-  console.log(prof)
-  if (request.body.newName) data[account].users[prof].name = request.body.newName;
+  console.log(data[account].users[prof].myList);
+
+  if (request.body.newName)
+    data[account].users[prof].name = request.body.newName;
   if (request.body.language)
     data[account].users[prof].language = request.body.language;
   if (request.body.autoPlaySettings)
     data[account].users[prof].autoPlaySettings = request.body.autoPlaySettings;
+  if (request.body.myList)
+    data[account].users[prof].myList = request.body.myList;
   if (request.body.imgSrc)
     data[account].users[prof].imgSrc = request.body.imgSrc;
-  console.log(data[account].users); // your JSON
+  console.log("---------------------------------------------");
+  console.log(data[account].users[prof].myList);
 });
 
 app.post("/process_remove", function (request, response) {
